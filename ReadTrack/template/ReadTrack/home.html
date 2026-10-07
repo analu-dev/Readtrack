@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Início · Read-Track{% endblock %}
+
+{% block content %}
+  {% for shelf in shelves %}
+    <section class="shelf" aria-labelledby="shelf-{{ shelf.key }}">
+      <div class="shelf-head">
+        <h2 id="shelf-{{ shelf.key }}">
+          {{ shelf.title }}<span class="count">{{ shelf.count }}</span>
+        </h2>
+        {% if shelf.link %}<a href="{{ shelf.link }}">Ver tudo →</a>{% endif %}
+      </div>
+
+      <div class="carousel-wrap">
+        <button class="nav prev" type="button" data-dir="-1" aria-label="Anterior">‹</button>
+        <div class="carousel" tabindex="0">
+          {% for book in shelf.books %}
+            {% include "books/_book_card.html" %}
+          {% endfor %}
+        </div>
+        <button class="nav next" type="button" data-dir="1" aria-label="Próximo">›</button>
+      </div>
+    </section>
+  {% empty %}
+    <div class="empty">
+      <h2>Sua estante está vazia</h2>
+      <p>Cadastre o primeiro livro, mangá ou webtoon para começar a acompanhar suas leituras.</p>
+      {% if user.is_authenticated %}
+        <a class="btn" href="{% url 'new' %}">+ Adicionar obra</a>
+      {% else %}
+        <a class="btn" href="{% url 'login' %}">Entrar</a>
+      {% endif %}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Setas dos carrosséis: rolam cerca de uma "página" por clique
+  document.querySelectorAll(".carousel-wrap").forEach(function (wrap) {
+    var track = wrap.querySelector(".carousel");
+    wrap.querySelectorAll(".nav").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var dir = Number(btn.dataset.dir);
+        track.scrollBy({ left: dir * track.clientWidth * 0.85, behavior: "smooth" });
+      });
+    });
+  });
+</script>
+{% endblock %}

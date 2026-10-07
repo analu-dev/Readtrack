@@ -1,6 +1,18 @@
 from django.contrib import admin
 
-from .models import Favorites, NewBook, ReadingProgress, UserProfile
+from .models import Favorites, NewBook, ReadingProgress, Report, UserProfile
+
+
+@admin.register(Report)
+class ReportAdmin(admin.ModelAdmin):
+    list_display = ("created_at", "user", "short_message", "resolved")
+    list_filter = ("resolved",)
+    list_editable = ("resolved",)
+    search_fields = ("message", "user__username")
+
+    @admin.display(description="Mensagem")
+    def short_message(self, obj):
+        return obj.message[:60]
 
 
 @admin.register(ReadingProgress)

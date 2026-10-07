@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import NewBook, ReadingProgress, UserProfile
+from .models import NewBook, ReadingProgress, Report, UserProfile
 
 
 class BookForm(forms.ModelForm):
@@ -53,3 +53,15 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
         fields = ["profile_picture"]
+
+
+class ReportForm(forms.ModelForm):
+    class Meta:
+        model = Report
+        fields = ["message"]
+        labels = {"message": "Descreva o problema"}
+        widgets = {
+            "message": forms.Textarea(
+                attrs={"rows": 6, "placeholder": "O que aconteceu? Em qual página?"}
+            )
+        }

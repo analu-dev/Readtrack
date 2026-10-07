@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Read-Track{% endblock %}</title>
+    <link rel="stylesheet" href="https://use.typekit.net/zug8yrx.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <header>
+        <nav>
+           <a href="/" class="logo">
+            <img src="{% static 'img/logo.png' %}" alt="Logo Reaven" class="logo-img">
+            <span>REAVEN</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="{% url 'index' %}"><img src="{% static 'img/home.png' %}" alt="home"></a></li>
+                <li><a href="{% url 'search' %}"><img src="{% static 'img/search.png' %}" alt="search"></a></li>
+                <li><a href="{% url 'new' %}"><img src="{% static 'img/new.png' %}" alt="new"></a></li>
+                <li><a href="{% url 'report' %}">Reporte um problema</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'favorites_list' %}">Favoritos</a></li>
+                    <li><a href="{% url 'profile' %}">{{ user.username }}</a></li>
+                    <li>
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="link-btn">Sair</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'login' %}">Entrar</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock content %}
+    </main>
+
+    <footer>
+        <p>&copy; {% now "Y" %} Reaven. Todos os direitos reservados.</p>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+
+</body>
+</html>

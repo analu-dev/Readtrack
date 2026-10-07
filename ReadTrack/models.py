@@ -141,3 +141,20 @@ class ReadingProgress(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.book.title}: cap. {self.current_chapter}"
+
+
+class Report(models.Model):
+    """Relato de problema enviado pela página "Reporte um problema"."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    resolved = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Report #{self.pk}: {self.message[:40]}"

@@ -1,48 +1,118 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
-from django.contrib import messages
-
-from .forms import BookForm, ProfileForm, ProgressForm
+from .forms import BookForm, ProfileForm, ProgressForm, ReportForm
 from .models import Favorites, NewBook, ReadingProgress, UserProfile
+
+RECENT_LIMIT = 12  # itens no carrossel de recentes
+SHELF_LIMIT = 20   # itens em cada carrossel de categoria
+
+# Carrosséis por tipo de conteúdo (apenas obras digitais). A ordem aqui é a ordem na página.
+CONTENT_SHELVES = [
+    ("webtoon", "Webtoons"),
+    ("manhwa", "Manhwas"),
+    ("manga", "Mangás"),
+    ("novel", "Novels"),
+    ("fanfic", "Fanfics"),
+]
+
+
+def _user_maps(user):
+    """Progresso e favoritos do usuário logado, buscados uma única vez por requisição."""
+    if not user.is_authenticated:
+        return {}, set()
+    progress = {
+        p.book_id: p
+        for p in ReadingProgress.objects.filter(user=user).select_related("book")
+    }
+    favorites = set(Favorites.objects.filter(user=user).values_list("book_id", flat=True))
+    return progress, favorites
+
+
+def _decorate(books, progress, favorites):
+    """Anexa `user_progress` e `is_favorite` a cada livro (usados em _book_card.html)."""
+    books = list(books)
+    for book in books:
+        book.user_progress = progress.get(book.pk)
+        book.is_favorite = book.pk in favorites
+    return books
+
+
+def home(request):
+    progress, favorites = _user_maps(request.user)
+    list_url = reverse("search")
+
+    def shelf(key, title, queryset, limit, link=None):
+        return {
+            "key": key,
+            "title": title,
+            "count": queryset.count(),
+            "books": _decorate(queryset[:limit], progress, favorites),
+            "link": link,
+        }
+
+    all_books = NewBook.objects.all()
+    digital = all_books.filter(format="digital")
+
+    shelves = [
+        shelf("recent", "Adicionados recentemente", all_books, RECENT_LIMIT),
+        shelf(
+            "physical", "Físicos", all_books.filter(format="physical"), SHELF_LIMIT,
+            link=f"{list_url}?format=physical",
+        ),
+    ]
+    for key, title in CONTENT_SHELVES:
+        shelves.append(
+            shelf(key, title, digital.filter(content_type=key), SHELF_LIMIT,
+                  link=f"{list_url}?type={key}")
+        )
+    # Digitais sem tipo definido ou marcados como "other"
+    shelves.append(
+        shelf("other", "Outros", digital.filter(content_type__in=["other", ""]), SHELF_LIMIT,
+              link=f"{list_url}?type=other")
+    )
+
+    # Carrosséis vazios não aparecem na página
+    shelves = [s for s in shelves if s["count"] > 0]
+    return render(request, "books/home.html", {"shelves": shelves})
 
 
 def book_list(request):
     books = NewBook.objects.all()
 
-    # Filtros opcionais via querystring: ?status=reading&type=manga&q=naruto
-    status = request.GET.get("status")
-    content_type = request.GET.get("type")
-    query = request.GET.get("q")
+    # Filtros via querystring: ?status=reading&type=manga&format=digital&q=naruto
+    status = request.GET.get("status", "")
+    content_type = request.GET.get("type", "")
+    book_format = request.GET.get("format", "")
+    query = request.GET.get("q", "").strip()
     if status:
         books = books.filter(status=status)
     if content_type:
         books = books.filter(content_type=content_type)
+    if book_format:
+        books = books.filter(format=book_format)
     if query:
         books = books.filter(title__icontains=query)
 
-    favorite_ids = set()
-    progress_map = {}  # book_id -> ReadingProgress (para mostrar a barra na lista)
-    if request.user.is_authenticated:
-        favorite_ids = set(
-            Favorites.objects.filter(user=request.user).values_list("book_id", flat=True)
-        )
-        progress_map = {
-            p.book_id: p
-            for p in ReadingProgress.objects.filter(user=request.user).select_related("book")
-        }
-
+    progress, favorites = _user_maps(request.user)
     return render(
         request,
         "books/book_list.html",
         {
-            "books": books,
-            "favorite_ids": favorite_ids,
-            "progress_map": progress_map,
+            "books": _decorate(books, progress, favorites),
             "status_choices": NewBook.STATUS_CHOICES,
             "type_choices": NewBook.CONTENT_TYPE_CHOICES,
+            "format_choices": NewBook.FORMAT_CHOICES,
+            "filters": {
+                "status": status,
+                "type": content_type,
+                "format": book_format,
+                "q": query,
+            },
         },
     )
 
@@ -114,7 +184,7 @@ def book_update(request, pk):
 def book_delete(request, pk):
     book = get_object_or_404(NewBook, pk=pk)
     book.delete()
-    return redirect("book_list")
+    return redirect("index")
 
 
 @login_required
@@ -134,7 +204,22 @@ def toggle_favorite(request, pk):
 @login_required
 def favorites_list(request):
     favorites = Favorites.objects.filter(user=request.user).select_related("book")
-    return render(request, "books/favorites_list.html", {"favorites": favorites})
+    progress, fav_ids = _user_maps(request.user)
+    books = _decorate([f.book for f in favorites], progress, fav_ids)
+    return render(request, "books/favorites_list.html", {"favorites": favorites, "books": books})
+
+
+def report(request):
+    """Página "Reporte um problema": qualquer visitante pode enviar."""
+    form = ReportForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        new_report = form.save(commit=False)
+        if request.user.is_authenticated:
+            new_report.user = request.user
+        new_report.save()
+        messages.success(request, "Obrigado! Seu relato foi enviado.")
+        return redirect("index")
+    return render(request, "books/report.html", {"form": form})
 
 
 @login_required

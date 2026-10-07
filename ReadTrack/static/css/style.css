@@ -1,0 +1,330 @@
+/* ==========================================================
+   Read-Track — estilos globais
+   ========================================================== */
+
+:root {
+  --bg: #0f1117;
+  --surface: #181b24;
+  --surface-2: #222634;
+  --text: #e8e9ee;
+  --muted: #9498a8;
+  --accent: #8b7cf6;
+  --accent-2: #5eead4;
+  --danger: #f87171;
+  --warning: #fbbf24;
+  --radius: 12px;
+  /* Coloque o nome da família do seu kit Typekit na frente, ex.: "nome-da-fonte", */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f6f6fa;
+    --surface: #ffffff;
+    --surface-2: #ececf4;
+    --text: #1b1d27;
+    --muted: #62667a;
+    --accent: #6d5ce8;
+    --accent-2: #0d9488;
+    --danger: #dc2626;
+    --warning: #b45309;
+  }
+  /* Os ícones do menu são claros; no tema claro eles são invertidos */
+  .nav-links img { filter: invert(1); }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  line-height: 1.5;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* ---------- Cabeçalho ---------- */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--surface-2);
+}
+
+header nav {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: .08em;
+}
+.logo-img { width: 32px; height: 32px; object-fit: contain; display: block; }
+
+.nav-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.nav-links form { margin: 0; }
+.nav-links a,
+.link-btn {
+  display: inline-flex;
+  align-items: center;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: .95rem;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.nav-links a:hover,
+.link-btn:hover { color: var(--text); }
+.nav-links img { width: 24px; height: 24px; display: block; opacity: .85; }
+.nav-links a:hover img { opacity: 1; }
+
+/* ---------- Conteúdo ---------- */
+main {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 20px 64px;
+}
+
+footer {
+  border-top: 1px solid var(--surface-2);
+  padding: 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: .85rem;
+}
+footer p { margin: 0; }
+
+/* ---------- Mensagens (django.contrib.messages) ---------- */
+.alert {
+  background: var(--surface);
+  border-left: 4px solid var(--accent);
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+.alert-success { border-color: var(--accent-2); }
+.alert-error,
+.alert-danger { border-color: var(--danger); }
+.alert-warning { border-color: var(--warning); }
+
+/* ---------- Botões ---------- */
+.btn {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: .9rem;
+  border: 0;
+  cursor: pointer;
+}
+.btn:hover { filter: brightness(1.1); }
+
+/* ---------- Carrosséis ---------- */
+.shelf { margin-bottom: 40px; }
+.shelf-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.shelf-head h2 { margin: 0; font-size: 1.3rem; letter-spacing: -0.01em; }
+.shelf-head .count { color: var(--muted); font-size: .85rem; margin-left: 8px; font-weight: 400; }
+.shelf-head a { color: var(--accent); font-size: .9rem; }
+.shelf-head a:hover { text-decoration: underline; }
+
+.carousel-wrap { position: relative; }
+.carousel {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 4px 2px 14px;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-2) transparent;
+}
+.carousel > .card { scroll-snap-align: start; flex: 0 0 150px; }
+
+.nav {
+  position: absolute;
+  top: 38%;
+  transform: translateY(-50%);
+  z-index: 5;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--surface-2);
+  cursor: pointer;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .35);
+  opacity: 0;
+  transition: opacity .15s;
+}
+.carousel-wrap:hover .nav,
+.nav:focus-visible { opacity: 1; }
+.nav.prev { left: -12px; }
+.nav.next { right: -12px; }
+@media (hover: none) { .nav { display: none; } }
+
+/* ---------- Card de obra ---------- */
+.card { display: block; transition: transform .15s; }
+.card:hover { transform: translateY(-4px); }
+
+.cover {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface-2);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .28);
+}
+.cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cover-placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--accent);
+  background: linear-gradient(160deg, var(--surface-2), var(--surface));
+}
+
+.fav {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .6);
+  color: #fb7185;
+  font-size: .95rem;
+}
+.tag {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  font-size: .68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .7);
+  color: #fff;
+}
+.tag.ongoing { background: var(--accent); }
+.tag.hiatus { background: #b45309; }
+
+.card-body { padding: 10px 2px 0; }
+.card-title {
+  font-weight: 650;
+  font-size: .95rem;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-author {
+  color: var(--muted);
+  font-size: .8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bar { height: 5px; background: var(--surface-2); border-radius: 999px; margin-top: 8px; overflow: hidden; }
+.bar span { display: block; height: 100%; background: var(--accent-2); border-radius: 999px; }
+.progress-note { color: var(--muted); font-size: .72rem; margin-top: 3px; }
+
+/* ---------- Biblioteca (grade + filtros) ---------- */
+.grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+.filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
+.filters input,
+.filters select {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--surface-2);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font: inherit;
+  font-size: .9rem;
+}
+.filters input[type="search"] { flex: 1; min-width: 180px; }
+
+/* ---------- Formulários ---------- */
+.form-card {
+  max-width: 640px;
+  margin: 0 auto;
+  background: var(--surface);
+  padding: 28px;
+  border-radius: var(--radius);
+}
+.form-card h1 { margin-top: 0; font-size: 1.5rem; }
+.form-card label { display: block; font-weight: 600; margin-bottom: 6px; }
+.form-card input[type="text"],
+.form-card input[type="number"],
+.form-card input[type="password"],
+.form-card select,
+.form-card textarea {
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--surface-2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: inherit;
+}
+.form-card .btn { margin-top: 16px; }
+.errorlist { list-style: none; margin: 6px 0; padding: 0; color: var(--danger); font-size: .85rem; }
+.help { color: var(--muted); font-size: .9rem; }
+
+/* ---------- Estado vazio ---------- */
+.empty {
+  text-align: center;
+  padding: 64px 20px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  color: var(--muted);
+}
+.empty h2 { color: var(--text); margin-top: 0; }

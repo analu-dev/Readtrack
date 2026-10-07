@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Reporte um problema · Read-Track{% endblock %}
+
+{% block content %}
+  <section class="form-card">
+    <h1>Reporte um problema</h1>
+    <p class="help">
+      Algo não funcionou como esperado? Descreva o que aconteceu e, se possível,
+      em qual página.
+    </p>
+
+    <form method="post">
+      {% csrf_token %}
+      {{ form.message.label_tag }}
+      {{ form.message }}
+      {{ form.message.errors }}
+      <button class="btn" type="submit">Enviar</button>
+    </form>
+  </section>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Buscar · Read-Track{% endblock %}
+
+{% block content %}
+  <div class="shelf-head">
+    <h2>Biblioteca<span class="count">{{ books|length }}</span></h2>
+  </div>
+
+  <form class="filters" method="get">
+    <input type="search" name="q" value="{{ filters.q }}" placeholder="Buscar por título" aria-label="Buscar por título">
+
+    <select name="type" aria-label="Tipo">
+      <option value="">Todos os tipos</option>
+      {% for value, label in type_choices %}
+        <option value="{{ value }}" {% if filters.type == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+
+    <select name="format" aria-label="Formato">
+      <option value="">Físico e digital</option>
+      {% for value, label in format_choices %}
+        <option value="{{ value }}" {% if filters.format == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+
+    <select name="status" aria-label="Status de leitura">
+      <option value="">Qualquer status</option>
+      {% for value, label in status_choices %}
+        <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+
+    <button class="btn" type="submit">Filtrar</button>
+  </form>
+
+  {% if books %}
+    <div class="grid">
+      {% for book in books %}
+        {% include "books/_book_card.html" %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">
+      <h2>Nada encontrado</h2>
+      <p>Nenhuma obra combina com esses filtros.</p>
+    </div>
+  {% endif %}
+{% endblock %}
