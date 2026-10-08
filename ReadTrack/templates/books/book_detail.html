@@ -116,8 +116,8 @@
 
           <form class="progress-form" method="post" action="{% url 'update_progress' book.pk %}">
             {% csrf_token %}
-            <label for="{{ progress_form.current_chapter.id_for_label }}">Capítulo atual</label>
-            {{ progress_form.current_chapter }}
+            <label for="{{ progress_form.value.id_for_label }}">{{ progress_form.value.label }}</label>
+            {{ progress_form.value }}
             {% if book.chapters %}
               <span class="of">de {{ book.chapters }}{% if not book.is_complete %} publicados{% endif %}</span>
             {% endif %}

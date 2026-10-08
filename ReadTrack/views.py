@@ -148,7 +148,7 @@ def update_progress(request, pk):
     """Salva o capítulo atual do usuário logado neste livro."""
     book = get_object_or_404(NewBook, pk=pk)
     progress, _ = ReadingProgress.objects.get_or_create(user=request.user, book=book)
-    form = ProgressForm(request.POST, instance=progress, book=book)
+    form = ProgressForm(request.POST, progress=progress, book=book)
     if form.is_valid():
         progress = form.save()
         # Em obras em lançamento, ler o capítulo N prova que ele já saiu:
