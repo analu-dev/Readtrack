@@ -6,6 +6,17 @@ from .models import NewBook, ReadingProgress, Report, UserProfile
 
 
 class BookForm(forms.ModelForm):
+    reading_status = forms.ChoiceField(
+        choices=ReadingProgress.STATUS_CHOICES,
+        initial="want_to_read",
+        label="Meu status de leitura",
+    )
+
+    def __init__(self, *args, include_reading_status=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not include_reading_status:
+            self.fields.pop("reading_status")
+
     class Meta:
         model = NewBook
         fields = [
@@ -15,7 +26,6 @@ class BookForm(forms.ModelForm):
             "content_type",
             "format",
             "platform",
-            "status",
             "publication_status",
             "chapters",
             "pages",
@@ -28,13 +38,15 @@ class BookForm(forms.ModelForm):
             "content_type": "Tipo de conteúdo",
             "format": "Formato",
             "platform": "Plataforma",
-            "status": "Status de leitura",
             "publication_status": "Situação da obra",
             "chapters": "Capítulos",
             "pages": "Páginas",
             "cover": "Capa",
         }
-        help_texts = {"platform": "Onde você lê (ex.: Webtoon, Kindle)."}
+        help_texts = {
+            "platform": "Onde você lê (ex.: Webtoon, Kindle).",
+            "pages": "Usado para acompanhar a leitura quando a obra não tem capítulos.",
+        }
         widgets = {"cover": forms.FileInput(attrs={"accept": "image/*"})}
 
     def clean(self):
@@ -42,28 +54,58 @@ class BookForm(forms.ModelForm):
         # Obras digitais costumam ter plataforma; só avisamos se estiver vazia
         if cleaned.get("format") == "digital" and not cleaned.get("platform"):
             self.add_error("platform", "Informe a plataforma para obras digitais.")
+
+        if cleaned.get("reading_status") == "finished":
+            chapters = cleaned.get("chapters")
+            total = cleaned.get("pages") if not chapters else chapters
+            if cleaned.get("publication_status") != "completed" or not total:
+                self.add_error(
+                    "reading_status",
+                    "Para marcar como terminado, informe uma obra completa com o total "
+                    "de páginas ou capítulos.",
+                )
         return cleaned
 
 
-class ProgressForm(forms.ModelForm):
-    class Meta:
-        model = ReadingProgress
-        fields = ["current_chapter"]
-        labels = {"current_chapter": "Capítulo atual"}
-        widgets = {"current_chapter": forms.NumberInput(attrs={"min": 0})}
+class ProgressForm(forms.Form):
+    """Posição atual de leitura: capítulo, ou página se a obra não tem capítulos."""
 
-    def __init__(self, *args, book=None, **kwargs):
+    value = forms.IntegerField(min_value=0)
+
+    def __init__(self, *args, book, progress=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.book = book
+        self.progress = progress
 
-    def clean_current_chapter(self):
-        chapter = self.cleaned_data["current_chapter"]
-        total = self.book.chapters if self.book else None
-        # Obra completa: o total é definitivo, então não dá para passar dele.
+        field = self.fields["value"]
+        field.label = f"{book.unit_label.capitalize()} atual"
+        field.widget.attrs["min"] = 0
+        # Obra completa: o total é definitivo, então o campo já limita o valor
+        if book.is_complete and book.progress_total:
+            field.widget.attrs["max"] = book.progress_total
+        if progress is not None:
+            self.initial["value"] = progress.current
+
+    def clean_value(self):
+        value = self.cleaned_data["value"]
+        total = self.book.progress_total
+        # Obra completa: não passa do total.
         # Obra em lançamento: aceita (o capítulo já existe) e a view atualiza o total.
-        if total and self.book.is_complete and chapter > total:
-            raise forms.ValidationError(f"Esta obra tem apenas {total} capítulos.")
-        return chapter
+        if total and self.book.is_complete and value > total:
+            raise forms.ValidationError(
+                f"Esta obra tem apenas {total} {self.book.unit_label_plural}."
+            )
+        return value
+
+    def clean(self):
+        cleaned = super().clean()
+        # Obra terminada fica travada: não aceita novo progresso
+        if self.progress is not None and self.progress.is_finished:
+            raise forms.ValidationError(
+                "Esta obra já está terminada, então não dá para adicionar "
+                f"mais {self.book.unit_label_plural}."
+            )
+        return cleaned
 
 
 class ProfileForm(forms.ModelForm):

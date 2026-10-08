@@ -25,10 +25,15 @@ class ReadingProgressAdmin(admin.ModelAdmin):
 @admin.register(NewBook)
 class NewBookAdmin(admin.ModelAdmin):
     list_display = (
-        "title", "author", "content_type", "status", "publication_status",
-        "chapters", "format", "date_added",
+        "title",
+        "author",
+        "content_type",
+        "publication_status",
+        "chapters",
+        "format",
+        "date_added",
     )
-    list_filter = ("status", "publication_status", "format", "content_type", "genre")
+    list_filter = ("publication_status", "format", "content_type", "genre")
     search_fields = ("title", "author", "genre", "platform")
     date_hierarchy = "date_added"
 

@@ -84,7 +84,7 @@
 
         {% if user.is_authenticated %}
           <p class="progress-status">
-            {% if progress.is_finished %}
+            {% if progress.is_finished or book.is_finished %}
               Você terminou esta obra.
             {% elif progress.is_caught_up %}
               Em dia: você leu tudo o que já foi lançado (cap. {{ progress.current_chapter }}).

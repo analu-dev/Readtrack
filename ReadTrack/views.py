@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -128,7 +129,7 @@ def book_detail(request, pk):
     progress_form = None
     if request.user.is_authenticated:
         progress = ReadingProgress.objects.filter(user=request.user, book=book).first()
-        progress_form = ProgressForm(instance=progress, book=book)
+        progress_form = ProgressForm(progress=progress, book=book)
     return render(
         request,
         "books/book_detail.html",
@@ -163,9 +164,31 @@ def update_progress(request, pk):
 
 @login_required
 def book_create(request):
-    form = BookForm(request.POST or None, request.FILES or None)
+    form = BookForm(
+        request.POST or None,
+        request.FILES or None,
+        include_reading_status=True,
+    )
     if request.method == "POST" and form.is_valid():
-        book = form.save()
+        with transaction.atomic():
+            book = form.save()
+            reading_status = form.cleaned_data["reading_status"]
+            current = 0
+            if reading_status == "reading":
+                current = 1
+            elif reading_status == "finished":
+                current = book.progress_total
+
+            progress_position = (
+                {"current_page": current}
+                if book.progress_unit == "page"
+                else {"current_chapter": current}
+            )
+            ReadingProgress.objects.create(
+                user=request.user,
+                book=book,
+                **progress_position,
+            )
         return redirect("book_detail", pk=book.pk)
     return render(request, "books/book_form.html", {"form": form, "title": "Adicionar obra"})
 
