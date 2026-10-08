@@ -460,3 +460,9 @@ footer p { margin: 0; }
 .stats strong { display: block; font-size: 1.6rem; line-height: 1.1; }
 .stats span { color: var(--muted); font-size: .8rem; }
 .profile .form-card { max-width: none; }
+
+/* ---------- Cadastro / login ---------- */
+.form-card .help ul { margin: 4px 0 0; padding-left: 18px; }
+.form-card .help li { margin: 2px 0; }
+.auth-switch { margin: 18px 0 0; color: var(--muted); font-size: .9rem; }
+.auth-switch a { color: var(--accent); }

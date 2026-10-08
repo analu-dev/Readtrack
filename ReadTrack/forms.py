@@ -1,4 +1,6 @@
 from django import forms
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import UserCreationForm
 
 from .models import NewBook, ReadingProgress, Report, UserProfile
 
@@ -70,6 +72,30 @@ class ProfileForm(forms.ModelForm):
         fields = ["profile_picture"]
         labels = {"profile_picture": "Foto de perfil"}
         widgets = {"profile_picture": forms.FileInput(attrs={"accept": "image/*"})}
+
+
+class SignUpForm(UserCreationForm):
+    """Cadastro de novo usuário: usuário, email e senha (com as validações do Django)."""
+
+    email = forms.EmailField(label="Email", required=True)
+
+    class Meta(UserCreationForm.Meta):
+        model = get_user_model()
+        fields = ("username", "email")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].label = "Usuário"
+        self.fields["username"].help_text = "Até 150 caracteres: letras, números e @/./+/-/_"
+        self.fields["password1"].label = "Senha"
+        self.fields["password2"].label = "Confirmar senha"
+        self.fields["password2"].help_text = "Repita a mesma senha."
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip()
+        if get_user_model().objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("Já existe uma conta com este email.")
+        return email
 
 
 class ReportForm(forms.ModelForm):

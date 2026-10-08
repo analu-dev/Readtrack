@@ -28,5 +28,7 @@
       <input type="hidden" name="next" value="{{ next }}">
       <button class="btn" type="submit">Entrar</button>
     </form>
+
+    <p class="auth-switch">Ainda não tem conta? <a href="{% url 'signup' %}"><u>Criar conta</u></a></p>
   </section>
 {% endblock %}

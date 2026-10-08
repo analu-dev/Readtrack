@@ -1,11 +1,12 @@
 from django.contrib import messages
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
-from .forms import BookForm, ProfileForm, ProgressForm, ReportForm
+from .forms import BookForm, ProfileForm, ProgressForm, ReportForm, SignUpForm
 from .models import Favorites, NewBook, ReadingProgress, UserProfile
 
 RECENT_LIMIT = 12  # itens no carrossel de recentes
@@ -207,6 +208,21 @@ def favorites_list(request):
     progress, fav_ids = _user_maps(request.user)
     books = _decorate([f.book for f in favorites], progress, fav_ids)
     return render(request, "books/favorites_list.html", {"favorites": favorites, "books": books})
+
+
+def signup(request):
+    """Cadastro: cria o usuário, o perfil e já deixa a pessoa logada."""
+    if request.user.is_authenticated:
+        return redirect("index")
+
+    form = SignUpForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        user = form.save()
+        UserProfile.objects.get_or_create(user=user)
+        login(request, user)
+        messages.success(request, f"Conta criada! Bem-vindo(a), {user.username}.")
+        return redirect("index")
+    return render(request, "registration/signup.html", {"form": form})
 
 
 def report(request):
