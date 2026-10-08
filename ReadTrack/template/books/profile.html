@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Perfil · Read-Track{% endblock %}
+
+{% block content %}
+  <section class="profile">
+    <div class="profile-head">
+      <div class="avatar">
+        {% if profile.profile_picture %}
+          <img src="{{ profile.profile_picture.url }}" alt="Foto de {{ user.username }}">
+        {% else %}
+          <span aria-hidden="true">{{ user.username|slice:":1"|upper }}</span>
+        {% endif %}
+      </div>
+      <div>
+        <h1>{{ user.username }}</h1>
+        {% if user.email %}<p class="help">{{ user.email }}</p>{% endif %}
+        <p class="help">Membro desde {{ user.date_joined|date:"m/Y" }}</p>
+      </div>
+    </div>
+
+    <ul class="stats" aria-label="Resumo de leitura">
+      <li><strong>{{ stats.reading }}</strong><span>Lendo</span></li>
+      <li><strong>{{ stats.caught_up }}</strong><span>Em dia</span></li>
+      <li><strong>{{ stats.finished }}</strong><span>Terminados</span></li>
+      <li><strong>{{ stats.favorites }}</strong><span>Favoritos</span></li>
+    </ul>
+
+    <div class="form-card">
+      <h2>Foto de perfil</h2>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="field">
+          {{ form.profile_picture }}
+          {{ form.profile_picture.errors }}
+        </div>
+        <button class="btn" type="submit">Salvar foto</button>
+      </form>
+    </div>
+  </section>
+{% endblock %}

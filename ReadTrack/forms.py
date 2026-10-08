@@ -19,6 +19,21 @@ class BookForm(forms.ModelForm):
             "pages",
             "cover",
         ]
+        labels = {
+            "title": "Título",
+            "author": "Autor",
+            "genre": "Gênero",
+            "content_type": "Tipo de conteúdo",
+            "format": "Formato",
+            "platform": "Plataforma",
+            "status": "Status de leitura",
+            "publication_status": "Situação da obra",
+            "chapters": "Capítulos",
+            "pages": "Páginas",
+            "cover": "Capa",
+        }
+        help_texts = {"platform": "Onde você lê (ex.: Webtoon, Kindle)."}
+        widgets = {"cover": forms.FileInput(attrs={"accept": "image/*"})}
 
     def clean(self):
         cleaned = super().clean()
@@ -53,6 +68,8 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
         fields = ["profile_picture"]
+        labels = {"profile_picture": "Foto de perfil"}
+        widgets = {"profile_picture": forms.FileInput(attrs={"accept": "image/*"})}
 
 
 class ReportForm(forms.ModelForm):

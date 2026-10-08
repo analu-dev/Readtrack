@@ -166,7 +166,7 @@ def book_create(request):
     if request.method == "POST" and form.is_valid():
         book = form.save()
         return redirect("book_detail", pk=book.pk)
-    return render(request, "books/book_form.html", {"form": form, "title": "Add book"})
+    return render(request, "books/book_form.html", {"form": form, "title": "Adicionar obra"})
 
 
 @login_required
@@ -176,7 +176,7 @@ def book_update(request, pk):
     if request.method == "POST" and form.is_valid():
         form.save()
         return redirect("book_detail", pk=book.pk)
-    return render(request, "books/book_form.html", {"form": form, "title": "Edit book"})
+    return render(request, "books/book_form.html", {"form": form, "title": "Editar obra"})
 
 
 @login_required
@@ -228,5 +228,21 @@ def profile(request):
     form = ProfileForm(request.POST or None, request.FILES or None, instance=profile_obj)
     if request.method == "POST" and form.is_valid():
         form.save()
+        messages.success(request, "Foto de perfil atualizada!")
         return redirect("profile")
-    return render(request, "books/profile.html", {"form": form, "profile": profile_obj})
+
+    states = [
+        p.state
+        for p in ReadingProgress.objects.filter(user=request.user).select_related("book")
+    ]
+    stats = {
+        "reading": states.count("reading"),
+        "caught_up": states.count("caught_up"),
+        "finished": states.count("finished"),
+        "favorites": Favorites.objects.filter(user=request.user).count(),
+    }
+    return render(
+        request,
+        "books/profile.html",
+        {"form": form, "profile": profile_obj, "stats": stats},
+    )

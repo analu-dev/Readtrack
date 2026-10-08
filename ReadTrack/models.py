@@ -4,27 +4,27 @@ from django.db import models
 
 class NewBook(models.Model):
     STATUS_CHOICES = [
-        ("want_to_read", "Want to read"),
-        ("reading", "Reading"),
-        ("finished", "Finished"),
+        ("want_to_read", "Quero ler"),
+        ("reading", "Lendo"),
+        ("finished", "Terminado"),
     ]
     FORMAT_CHOICES = [
-        ("physical", "Physical"),
+        ("physical", "Físico"),
         ("digital", "Digital"),
     ]
     CONTENT_TYPE_CHOICES = [
-        ("manga", "Manga"),
+        ("manga", "Mangá"),
         ("manhwa", "Manhwa"),
         ("webtoon", "Webtoon"),
         ("novel", "Novel"),
         ("fanfic", "Fanfic"),
-        ("other", "Other"),
+        ("other", "Outro"),
     ]
 
     PUBLICATION_STATUS_CHOICES = [
-        ("completed", "Completed"),
-        ("ongoing", "Ongoing"),
-        ("hiatus", "On hiatus"),
+        ("completed", "Completa"),
+        ("ongoing", "Em lançamento"),
+        ("hiatus", "Em hiato"),
     ]
 
     title = models.CharField(max_length=100)

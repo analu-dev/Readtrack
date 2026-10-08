@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} · Read-Track{% endblock %}
+
+{% block content %}
+  <section class="form-card wide">
+    <h1>{{ title }}</h1>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      <div class="form-grid">
+        {% for field in form %}
+          <div class="field{% if field.name == 'title' or field.name == 'cover' %} full{% endif %}" id="field-{{ field.name }}">
+            <label for="{{ field.id_for_label }}">
+              {{ field.label }}{% if field.field.required %}<span class="req" aria-hidden="true"> *</span>{% endif %}
+            </label>
+
+            {% if field.name == "cover" and form.instance.cover %}
+              <img class="cover-preview" src="{{ form.instance.cover.url }}" alt="Capa atual">
+            {% endif %}
+
+            {{ field }}
+            {% if field.help_text %}<p class="help">{{ field.help_text }}</p>{% endif %}
+            {{ field.errors }}
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="form-actions">
+        <button class="btn" type="submit">Salvar</button>
+        {% if form.instance.pk %}
+          <a class="btn btn-outline" href="{% url 'book_detail' form.instance.pk %}">Cancelar</a>
+        {% else %}
+          <a class="btn btn-outline" href="{% url 'index' %}">Cancelar</a>
+        {% endif %}
+      </div>
+    </form>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // A plataforma só faz sentido para obras digitais
+  (function () {
+    var format = document.getElementById("id_format");
+    var row = document.getElementById("field-platform");
+    if (!format || !row) return;
+    function sync() { row.hidden = format.value !== "digital"; }
+    format.addEventListener("change", sync);
+    sync();
+  })();
+</script>
+{% endblock %}
