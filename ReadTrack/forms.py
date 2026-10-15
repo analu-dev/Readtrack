@@ -107,6 +107,13 @@ class ProgressForm(forms.Form):
             )
         return cleaned
 
+    def save(self):
+        value = self.cleaned_data["value"]
+        field = "current_page" if self.book.progress_unit == "page" else "current_chapter"
+        setattr(self.progress, field, value)
+        self.progress.save()
+        return self.progress
+
 
 class ProfileForm(forms.ModelForm):
     class Meta:

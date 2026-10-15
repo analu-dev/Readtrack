@@ -128,7 +128,7 @@
             <form class="progress-quick" method="post" action="{% url 'update_progress' book.pk %}">
               {% csrf_token %}
               <input type="hidden" name="current_chapter" value="{% if progress %}{{ progress.current_chapter|add:1 }}{% else %}1{% endif %}">
-              <button class="btn btn-outline" type="submit">+1 capítulo</button>
+              <button class="btn btn-outline" type="submit" name="increment" value="1">+1 capítulo</button>
             </form>
           {% endif %}
         {% else %}

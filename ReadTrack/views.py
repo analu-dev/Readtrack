@@ -149,16 +149,25 @@ def update_progress(request, pk):
     book = get_object_or_404(NewBook, pk=pk)
     progress, _ = ReadingProgress.objects.get_or_create(user=request.user, book=book)
     form = ProgressForm(request.POST, progress=progress, book=book)
+    if "increment" in request.POST:
+        data = {"value": progress.current + 1}
+    else:
+        data = request.POST
+    form = ProgressForm(data, progress=progress, book=book)
     if form.is_valid():
         progress = form.save()
-        # Em obras em lançamento, ler o capítulo N prova que ele já saiu:
-        # atualiza o total de capítulos publicados.
-        if not book.is_complete and progress.current_chapter > (book.chapters or 0):
-            book.chapters = progress.current_chapter
+        # Em obras em lançamento, ler o capítulo N prova que ele já saiu
+        if (
+            book.progress_unit == "chapter"
+            and not book.is_complete
+            and progress.current > (book.chapters or 0)
+        ):
+            book.chapters = progress.current
             book.save(update_fields=["chapters"])
-        messages.success(request, "Progresso atualizado!")
-    else:
-        messages.error(request, form.errors.get("current_chapter", ["Valor inválido."])[0])
+            messages.success(request, "Progresso atualizado!")
+        else:
+            errors = form.errors.get("value") or form.non_field_errors() or ["Valor inválido."]
+            messages.error(request, errors[0])
     return redirect("book_detail", pk=book.pk)
 
 
